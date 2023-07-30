@@ -1,6 +1,6 @@
 {
-  "name": "vue-quasar-typescript-starter",
-  "version": "0.0.1",
+  "name": "teochew-lion",
+  "version": "0.0.2",
   "description": "A Quasar Project",
   "productName": "vue-quasar-typescript-starter",
   "scripts": {

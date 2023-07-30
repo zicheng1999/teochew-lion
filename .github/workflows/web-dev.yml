@@ -1,5 +1,6 @@
 name: Publish Web Dev
 on:
+  workflow_dispatch:
   push:
     tags:
       - web-v*
@@ -9,9 +10,6 @@ jobs:
   deploy:
     name: Preview Web
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./packages/web
     steps:
       - uses: actions/checkout@v3
 
@@ -28,15 +26,17 @@ jobs:
           run_install: false
 
       - name: Install dependencies
-        run:  cd ../backend && pnpm i && cd ../web && pnpm i
+        working-directory: "packages"
+        run: cd backend && pnpm i && cd ../web && pnpm i
 
-      - name: Build for production
-        run: pnpm build:dev
+      - name: Build
+        working-directory: "packages/web"
+        run: pnpm run build:dev
 
       - name: Publish
         uses: cloudflare/wrangler-action@2.0.0
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
-          workingDirectory: "packages/web"
-          command: publish --env dev
+          workingDirectory: "packages/web/dist"
+          command: pages publish spa --project-name=teochew-lion-dev --commit-hash $GITHUB_SHA --branch main
