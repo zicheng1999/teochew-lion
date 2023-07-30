@@ -1,0 +1,42 @@
+name: Publish Web Prod
+on:
+  push:
+    tags:
+      - web-v*
+    paths:
+      - packages/web/**
+jobs:
+  deploy:
+    name: Preview Web
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./packages/web
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Nodejs and yarn with cache
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      - uses: pnpm/action-setup@v2
+        name: Install pnpm
+        id: pnpm-install
+        with:
+          version: 8
+          run_install: false
+
+      - name: Install dependencies
+        run:  cd ../backend && pnpm i && cd ../web && pnpm i
+
+      - name: Build for production
+        run: pnpm build:prod
+
+      - name: Publish
+        uses: cloudflare/wrangler-action@2.0.0
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          workingDirectory: "packages/web"
+          command: publish --env prod
